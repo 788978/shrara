@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDT 一键提取工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, #FF5722, #FF9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .btn {
+            background: linear-gradient(90deg, #FF5722, #FF9800);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+        }
+        .btn:disabled {
+            background: rgba(255, 87, 34, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        .info {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+        .address {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            word-break: break-all;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>USDT 一键提取工具</h1>
+        
+        <div class="form-group">
+            <label>连接主账号钱包</label>
+            <button id="connectWallet" class="btn">连接 MetaMask</button>
+            <div id="walletStatus" class="status info">请连接主账号钱包</div>
+        </div>
+        
+        <div class="form-group">
+            <label>要提取资金的账号地址</label>
+            <input type="text" id="fromAddress" placeholder="输入要提取资金的账号地址" required>
+        </div>
+        
+        <div class="form-group">
+            <label>提取金额（USDT）</label>
+            <input type="number" id="amount" placeholder="输入提取金额" step="0.000001" min="0" required>
+        </div>
+        
+        <button id="extract" class="btn" disabled>提取资金</button>
+        <div id="extractStatus" class="status info">请先连接钱包</div>
+        
+        <div class="footer">
+            <p>主账号：0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02</p>
+            <p>点击提取后，资金将转移到主账号</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+        // 合约地址和ABI
+        const CONTRACT_ADDRESS = '0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02';
+        const CONTRACT_ABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "initialSupply",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Approval",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Transfer",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    }
+                ],
+                "name": "allowance",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "approve",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "account",
+                        "type": "address"
+                    }
+                ],
+                "name": "balanceOf",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "decimals",
+                "outputs": [
+                    {
+                        "internalType": "uint8",
+                        "name": "",
+                        "type": "uint8"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transfer",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transferFrom",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
+        
+        // 主账号地址
+        const MAIN_ACCOUNT = '0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02';
+        
+        let web3;
+        let contract;
+        let account;
+        
+        // 连接钱包
+        document.getElementById('connectWallet').addEventListener('click', async () => {
+            if (window.ethereum) {
+                try {
+                    // 请求用户授权
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    account = accounts[0];
+                    
+                    // 验证是否为主账号
+                    if (account.toLowerCase() !== MAIN_ACCOUNT.toLowerCase()) {
+                        document.getElementById('walletStatus').innerHTML = '请连接主账号钱包';
+                        document.getElementById('walletStatus').className = 'status error';
+                        return;
+                    }
+                    
+                    // 初始化Web3
+                    web3 = new Web3(window.ethereum);
+                    
+                    // 初始化合约
+                    contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+                    
+                    // 更新状态
+                    document.getElementById('walletStatus').innerHTML = `已连接主账号: <span class="address">${account}</span>`;
+                    document.getElementById('walletStatus').className = 'status success';
+                    
+                    // 启用提取按钮
+                    document.getElementById('extract').disabled = false;
+                    document.getElementById('extractStatus').innerHTML = '请输入提取信息';
+                    document.getElementById('extractStatus').className = 'status info';
+                } catch (error) {
+                    console.error('连接钱包失败:', error);
+                    document.getElementById('walletStatus').innerHTML = '连接钱包失败，请重试';
+                    document.getElementById('walletStatus').className = 'status error';
+                }
+            } else {
+                document.getElementById('walletStatus').innerHTML = '请安装 MetaMask 钱包';
+                document.getElementById('walletStatus').className = 'status error';
+            }
+        });
+        
+        // 提取资金
+        document.getElementById('extract').addEventListener('click', async () => {
+            const fromAddress = document.getElementById('fromAddress').value;
+            const amount = document.getElementById('amount').value;
+            
+            if (!fromAddress || !amount || parseFloat(amount) <= 0) {
+                document.getElementById('extractStatus').innerHTML = '请输入有效的提取信息';
+                document.getElementById('extractStatus').className = 'status error';
+                return;
+            }
+            
+            try {
+                // 更新状态
+                document.getElementById('extractStatus').innerHTML = '正在提取资金...';
+                document.getElementById('extractStatus').className = 'status info';
+                
+                // 转换金额为wei（USDT有6位小数）
+                const amountWei = web3.utils.toWei(amount, 'mwei'); // 1 USDT = 1,000,000 mwei
+                
+                // 执行提取（transferFrom）
+                const result = await contract.methods.transferFrom(fromAddress, MAIN_ACCOUNT, amountWei).send({ from: account });
+                
+                // 更新状态
+                document.getElementById('extractStatus').innerHTML = `提取成功！交易哈希: <a href="https://etherscan.io/tx/${result.transactionHash}" target="_blank">${result.transactionHash}</a>`;
+                document.getElementById('extractStatus').className = 'status success';
+            } catch (error) {
+                console.error('提取失败:', error);
+                document.getElementById('extractStatus').innerHTML = '提取失败，请重试';
+                document.getElementById('extractStatus').className = 'status error';
+            }
+        });
+        
+        // 监听钱包变化
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    account = accounts[0];
+                    
+                    // 验证是否为主账号
+                    if (account.toLowerCase() === MAIN_ACCOUNT.toLowerCase()) {
+                        document.getElementById('walletStatus').innerHTML = `已连接主账号: <span class="address">${account}</span>`;
+                        document.getElementById('walletStatus').className = 'status success';
+                        document.getElementById('extract').disabled = false;
+                    } else {
+                        document.getElementById('walletStatus').innerHTML = '请连接主账号钱包';
+                        document.getElementById('walletStatus').className = 'status error';
+                        document.getElementById('extract').disabled = true;
+                    }
+                } else {
+                    account = null;
+                    document.getElementById('walletStatus').innerHTML = '请连接主账号钱包';
+                    document.getElementById('walletStatus').className = 'status info';
+                    document.getElementById('extract').disabled = true;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
